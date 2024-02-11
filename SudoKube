@@ -1,0 +1,179 @@
+SUDOKUBE
+
+QUESTION LINK: https://www.codingninjas.com/studio/problems/sudokube_5026289?leftPanelTabValue=PROBLEM
+
+APPROACH
+
+The idea is to perform operations by observing the change in SudoKube based on the rotation performed.
+
+Let's Observe changes in the SudoKube after performing 90 degrees clockwise rotation on the Front face.
+
+Notice the change in indices of faces adjacent to the Front face. Similarly, we have to observe the pattern followed for each face rotation and update all the faces respectively.
+
+Time Complexity: O(Q * 20), Where ‘Q’ denotes the number of operations to be performed
+
+Each operation affects 20 cells of the SudoKube, hence the time complexity will be O(Q * 20).
+
+Space Complexity: O(20), Each operation affects 20 cells of the SudoKube and as we need to store them temporarily, the space complexity is O(20) i.e. constant.
+
+C++ CODE
+
+/*
+    Time complexity: O(Q*20)
+    Space complexity: O(20)
+
+    Where 'Q' is the number of operations to be performed on the given Sudokube 'initialSudokube'.
+*/
+
+#include<bits/stdc++.h>
+using namespace std;
+// Hash-Map denoting the starting row of each Face.
+unordered_map<char, int> start {
+    {'F', 9},
+    {'B', 15},
+    {'L', 6},
+    {'R', 12},
+    {'U', 3},
+    {'D', 0},
+};
+// Hash-Map storing the points of Up-Right-Down-Left Face for current Face.
+unordered_map<char,vector<tuple<char,int,int>>> rotateFaceWise {
+    {'F', { make_tuple('U',2,0), make_tuple('U',2,1), make_tuple('U',2,2), 
+            make_tuple('R',0,0), make_tuple('R',1,0), make_tuple('R',2,0), 
+            make_tuple('D',0,2), make_tuple('D',0,1), make_tuple('D',0,0), 
+            make_tuple('L',2,2), make_tuple('L',1,2), make_tuple('L',0,2) }},
+    {'B', { make_tuple('U',0,2), make_tuple('U',0,1), make_tuple('U',0,0), 
+            make_tuple('L',0,0), make_tuple('L',1,0), make_tuple('L',2,0), 
+            make_tuple('D',2,0), make_tuple('D',2,1), make_tuple('D',2,2), 
+            make_tuple('R',2,2), make_tuple('R',1,2), make_tuple('R',0,2) }},
+    {'L', { make_tuple('U',0,0), make_tuple('U',1,0), make_tuple('U',2,0), 
+            make_tuple('F',0,0), make_tuple('F',1,0), make_tuple('F',2,0), 
+            make_tuple('D',0,0), make_tuple('D',1,0), make_tuple('D',2,0), 
+            make_tuple('B',2,2), make_tuple('B',1,2), make_tuple('B',0,2) }},
+    {'R', { make_tuple('U',2,2), make_tuple('U',1,2), make_tuple('U',0,2), 
+            make_tuple('B',0,0), make_tuple('B',1,0), make_tuple('B',2,0), 
+            make_tuple('D',2,2), make_tuple('D',1,2), make_tuple('D',0,2), 
+            make_tuple('F',2,2), make_tuple('F',1,2), make_tuple('F',0,2) }},
+    {'U', { make_tuple('B',0,2), make_tuple('B',0,1), make_tuple('B',0,0), 
+            make_tuple('R',0,2), make_tuple('R',0,1), make_tuple('R',0,0), 
+            make_tuple('F',0,2), make_tuple('F',0,1), make_tuple('F',0,0), 
+            make_tuple('L',0,2), make_tuple('L',0,1), make_tuple('L',0,0) }},
+    {'D', { make_tuple('F',2,0), make_tuple('F',2,1), make_tuple('F',2,2), 
+            make_tuple('R',2,0), make_tuple('R',2,1), make_tuple('R',2,2), 
+            make_tuple('B',2,0), make_tuple('B',2,1), make_tuple('B',2,2), 
+            make_tuple('L',2,0), make_tuple('L',2,1), make_tuple('L',2,2) }}
+};
+// Function for rotating elements of 'faceLetter' Face.
+void selfRotate(vector<vector<int>> &self, char faceLetter, int threshold) {
+    queue<int> values;
+    // Current face row value from 'start' hash-map.
+    pair<int,int> shift = make_pair(start[faceLetter], 0);
+    // Denotes current '{row, column}' we are on.
+    pair<int, int> rotateIndex = make_pair(0, 0);
+    // Direction of movement.
+    char dir = 'R';
+    // Only 8 elements are there on border.
+    int cnt = 8;
+    while (cnt > 0) {
+        int previousValue = self[rotateIndex.first+shift.first][rotateIndex.second+shift.second];
+        if ((int)values.size() == threshold) {
+            self[rotateIndex.first+shift.first][rotateIndex.second+shift.second] = values.front();
+            values.pop();
+            cnt--;
+        }
+        values.push(previousValue);
+        // Updating current '{row, column}' based on direction of movement 'dir'.
+        if (dir == 'R') {
+            if (rotateIndex.second == 2) {
+                rotateIndex.first++;
+                dir = 'D';
+            }
+            else {
+                rotateIndex.second++;
+            }
+        }
+        else if (dir == 'D') {
+            if (rotateIndex.first == 2) {
+                rotateIndex.second--;
+                dir = 'L';
+            }
+            else {
+                rotateIndex.first++;
+            }
+        }
+        else if (dir == 'L') {
+            if (rotateIndex.second == 0) {
+                rotateIndex.first--;
+                dir = 'U';
+            }
+            else {
+                rotateIndex.second--;
+            }
+        }
+        else {
+            if (rotateIndex.first == 0) {
+                rotateIndex.second++;
+                dir = 'R';
+            }
+            else {
+                rotateIndex.first--;
+            }
+        }
+    }
+    return;
+}
+// Function for rotating adjacent faces of 'faceLetter' Face.
+void adjacentFaceRotate(vector<vector<int>> &self, char faceLetter, int threshold) {
+    queue<int> values;
+    // Only 12 adjacent face cells are affected when any face rotated.
+    int n=12;
+    for(int i=n-threshold;i<n;i++) {
+        char face = get<0>(rotateFaceWise[faceLetter][i]);
+        int row = get<1>(rotateFaceWise[faceLetter][i]);
+        int col = get<2>(rotateFaceWise[faceLetter][i]);
+        pair<int,int> shift = make_pair(start[face],0);
+        row += shift.first;
+        col += shift.second;
+        values.push(self[row][col]);
+    }
+    for(int i=0;i<n;i++) {
+        // Getting '{face, row, column}' tuple from 'rotateFaceWise' hash-map.
+        char face = get<0>(rotateFaceWise[faceLetter][i]);
+        int row = get<1>(rotateFaceWise[faceLetter][i]);
+        int col = get<2>(rotateFaceWise[faceLetter][i]);
+        pair<int,int> shift = make_pair(start[face],0);
+        row += shift.first;
+        col += shift.second;
+        if(i<n-threshold) {
+            values.push(self[row][col]);
+        }
+        self[row][col] = values.front();
+        values.pop();
+    }
+    return;
+}
+vector<vector<int>> sudokube(vector<vector<int>> &initialSudokube, int q, vector<string> &operations) {
+    vector<vector<int>> ans = initialSudokube;
+    for (int i = 0; i < q; i++) {
+        string currOperation = operations[i];
+        char rotateDirection = currOperation[0];
+        /* Initialize a variable named 'threshold'
+           it stores the gap between the actual element and the element that will replace it after rotation
+           when we linearize the elements rotating. */
+        int threshold = 0;
+        if(currOperation.size()==1) {
+            threshold = 3;
+        }
+        else if(currOperation[1] == '\'') {
+            threshold = 9;
+        }
+        else {
+            threshold = 6;
+        }
+        adjacentFaceRotate(initialSudokube, currOperation[0], threshold);
+        // 'threshold-(threshold/3)' denotes the gap for the internal rotations of matrix.
+        selfRotate(initialSudokube, currOperation[0], threshold-(threshold/3));
+        ans = initialSudokube;
+    }
+    return ans;
+}
