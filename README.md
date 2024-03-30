@@ -1,4 +1,4 @@
-# UTKRISHT 3.0 ACM INTERNSHIP PROEJCT
+# UTKRISHT 3.0 ACM INTERNSHIP PROJECT
 
 Under the guidance of Professor P. Parijat Mathur, a report and case study related to air quality index. This Arduino Tutorial explain about how to make air quality monitoring and alert system using MQ135 sensor in ppm.
 
