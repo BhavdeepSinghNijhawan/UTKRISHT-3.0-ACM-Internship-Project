@@ -1,4 +1,4 @@
-<h1 align="center">UTKRISHT 3.0 ASSOCIATION OF COMPUTING MACHINERY</h1>
+<h1 align="center">UTKRISHT 3.0 ASSOCIATION FOR COMPUTING MACHINERY</h1>
 
 Under the guidance of Professor P. Parijat Mathur, a report and case study related to air quality index. This Arduino Tutorial explain about how to make air quality monitoring and alert system using MQ135 sensor in ppm.
 
